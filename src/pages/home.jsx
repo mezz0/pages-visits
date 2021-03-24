@@ -7,68 +7,153 @@ import InputFile from 'ds-react-input-file';
 const Wrapper = styled.div`
   width: 100%;
   padding: 20px;
+
+  .buttonBlock {
+    display: flex;
+    justify-content: center;
+  }
+
+  button {
+    margin: 10px;
+    padding: 5px 15px;
+    border-radius: 10px;
+    transition: all 0.5s ease;
+    background-color: #ffffff;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #ebebeb;
+    }
+  }
 `;
-function Home() {
-  // const [pageVisits, setPageVisits] = useState(null);
-  // const [uniqueVisits, setUniqueVisits] = useState(null);
-  const [fileData, setFileData] = useState(null);
 
-  // const dataSortedByPath = dataMapped.sort((a, b) => (a.url > b.url ? 1 : b.url > a.url ? -1 : 0));
-  // const uniqueUrl = [...new Set(dataSortedByPath.map((item) => item.url))];
-  // const testuniqueVisits = [...new Set(dataSortedByPath.map((item) => item.id))];
-  // console.log(uniqueUrl, testuniqueVisits);
+const CustomTable = styled.div`
+  #headerBlock,
+  #infoBlock {
+    display: flex;
+    justify-content: center;
 
-  const getDemUniques = (array) => {
-    const a = [];
-    const b = [];
-    let prev = [];
-
-    array.sort();
-    for (let i = 0; i < array.length; i++) {
-      if (array[i].url !== prev.url) {
-        a.push(array[i]);
-        b.push(1);
-      } else {
-        b[b.length - 1]++;
-      }
-      prev = array[i];
+    h2,
+    p {
+      padding: 10px;
+      width: 100%;
+      text-align: center;
     }
 
-    return [a, b];
+    h2 {
+      position: relative;
+
+      &.visits {
+        &:after {
+          content: '';
+          position: absolute;
+          border-width: ${(props) => (props.direction === 'asc' ? '3px 0px 0px 3px' : '0px 3px 3px 0px')};
+          border-style: solid;
+          border-color: black;
+          width: 10px;
+          height: 10px;
+          top: 50%;
+          transform: translateY(-50%) rotate(45deg);
+          right: 70px;
+          transition: all 0.3s ease;
+        }
+      }
+    }
+  }
+
+  #infoBlock {
+    display: block;
+    &:nth-child(odd) {
+      background-color: #ebebeb;
+    }
+    span {
+      display: flex;
+    }
+  }
+`;
+
+function Home() {
+  const [fileData, setFileData] = useState(null);
+  const [sortedDAta, setSortedData] = useState(fileData);
+  const [currentOrderBy, setCurrentOrderBy] = useState('');
+  const [sortDirection, setSortDirection] = useState('desc');
+
+  const sortByVisits = (direction) => {
+    const data = fileData;
+
+    if (direction === 'asc') {
+      data.sort((a, b) => (a.visits < b.visits ? -1 : 0));
+      setCurrentOrderBy('Least to Most');
+    }
+    if (direction === 'desc') {
+      data.sort((a, b) => (a.visits > b.visits ? -1 : 0));
+      setCurrentOrderBy('Most to Least');
+    }
+
+    setSortDirection(direction);
+    setSortedData(data);
   };
 
   const resolveData = (data) => {
     const dataSplit = data.split('\n');
-    const dataMapped = dataSplit.map((path) => ({
-      url: path.split(' ')[0],
-      id: path.split(' ')[1],
+    const dataMapped = dataSplit
+      .map((path) => ({
+        url: path.split(' ')[0],
+        id: path.split(' ')[1],
+      }))
+      .filter((x) => x.id !== undefined);
+    const uniqueUrl = [...new Set(dataMapped.map((item) => item.url))];
+
+    const dataInfo = uniqueUrl.map((path) => ({
+      url: dataMapped.find((x) => x.url === path).url,
+      visits: dataMapped.filter((x) => x.url === path).length,
+      ips: dataMapped.filter((x) => x.url === path),
+      uniqueIps: [...new Set(dataMapped.filter((x) => x.url === path).map((x) => x.id))],
     }));
 
-    const dataSortedByPath = dataMapped.sort((a, b) => (a.url > b.url ? 1 : b.url > a.url ? -1 : 0));
-    const result = getDemUniques(dataSortedByPath);
-    const pathsWithVisits = result[0]
-      .map((path, index) => ({
-        url: path.url,
-        visits: result[1][index],
-      }))
-      .sort((a, b) => (a.visits > b.visits ? 1 : b.visits > a.visits ? -1 : 0));
-    setFileData(pathsWithVisits);
+    setFileData(dataInfo);
   };
+
+  const sortByVisitsUnique = () => {
+    const data = fileData.sort((a, b) => (a.uniqueIps < b.uniqueIps ? 1 : 0));
+    setCurrentOrderBy('Unique visits > Most to Least');
+    setSortedData(data);
+    setSortDirection('desc');
+  };
+
   return (
     <Wrapper>
       <Helmet>
         <title>Home Page</title>
       </Helmet>
-      <div>
-        <p>Hi, please upload something and check the dev console</p>
+      <div className="buttonBlock">
+        <InputFile onComplete={(data) => resolveData(data)}>
+          <button>Upload</button>
+        </InputFile>
       </div>
-      <div>
-        <InputFile onComplete={(data) => resolveData(data)} />
-      </div>
-      <div>
-        {fileData &&
-          fileData.map((path) => !!path.url && <p key={path.url}>{`Path: ${path.url} .... Visits: ${path.visits}`}</p>)}
-      </div>
+      {fileData && (
+        <div className="buttonBlock">
+          <button onClick={() => sortByVisits('desc', fileData)}>Order by most to least visits</button>
+          <button onClick={() => sortByVisits('asc', fileData)}>Order by least to most visits</button>
+          <button onClick={() => sortByVisitsUnique(fileData)}>Order by Unique least to most visits</button>
+        </div>
+      )}
+      {sortedDAta && (
+        <CustomTable direction={sortDirection}>
+          <div id="headerBlock">
+            <h2>Path</h2>
+            <h2 className="visits">{`${currentOrderBy.includes('Unique') ? 'Unique' : ''} Visits`}</h2>
+          </div>
+          <div id="infoBlock">
+            {sortedDAta.map((path, i) => (
+              <span key={`${path.url}-${i}`}>
+                <p>{path.url}</p>
+                <p>{currentOrderBy.includes('Unique') ? path.uniqueIps.length : path.visits}</p>
+              </span>
+            ))}
+          </div>
+        </CustomTable>
+      )}
     </Wrapper>
   );
 }
