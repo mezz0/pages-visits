@@ -1,0 +1,18 @@
+# /node_modules/* and /bower_components/* ignored by default
+coverage
+dist
+*.ejs
+src/common/vendor
+src/betslip/vendor
+spec/helpers
+utils/webpack-subresource-integrity.js
+
+# Config 
+jest.config.js
+ 
+# DateManipulation swapping out Moment:
+src/common/timezone-data
+
+# Mock files:
+src/common/__mocks__
+spec/fixtures
