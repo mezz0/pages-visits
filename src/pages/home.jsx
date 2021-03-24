@@ -3,10 +3,13 @@ import { withRouter } from 'react-router-dom';
 import styled from 'styled-components/macro';
 import { Helmet } from 'react-helmet';
 import InputFile from 'ds-react-input-file';
+import * as vars from '../styles/exports';
 
 const Wrapper = styled.div`
   width: 100%;
   padding: 20px;
+  max-width: ${vars.sizes.maxWidth};
+  margin: auto;
 
   .buttonBlock {
     display: flex;
