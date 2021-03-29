@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { withRouter } from 'react-router-dom';
 import styled from 'styled-components/macro';
 import { Helmet } from 'react-helmet';
-import InputFile from 'ds-react-input-file';
 import * as vars from '../styles/exports';
 
 const Wrapper = styled.div`
@@ -124,15 +123,24 @@ function Home() {
     setSortDirection('desc');
   };
 
+  const handleUpload = (event) => {
+    const input = event.target;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const data = reader.result;
+      const decodedData = atob(data.replace('data:application/octet-stream;base64,', ''));
+      resolveData(decodedData);
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+
   return (
     <Wrapper>
       <Helmet>
         <title>Home Page</title>
       </Helmet>
       <div className="buttonBlock">
-        <InputFile onComplete={(data) => resolveData(data)}>
-          <button>Upload</button>
-        </InputFile>
+        <input data-testid="fileUpload" id='fileUpload' type='file' accept='.log' onChange={(e) => handleUpload(e)} />
       </div>
       {fileData && (
         <div className="buttonBlock">

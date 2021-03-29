@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`render Match Snap shot 1`] = `
+<div
+  className="home__Wrapper-sc-14vzjrl-0 FgCiJ"
+>
+  <div
+    className="buttonBlock"
+  >
+    <input
+      accept=".log"
+      data-testid="fileUpload"
+      id="fileUpload"
+      onChange={[Function]}
+      type="file"
+    />
+  </div>
+</div>
+`;
